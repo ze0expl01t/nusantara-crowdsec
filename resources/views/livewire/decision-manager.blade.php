@@ -41,7 +41,16 @@
                     <flux:table.rows>
                         @forelse ($filteredDecisions as $decision)
                             <flux:table.row :key="$decision['id'] ?? md5(json_encode($decision))">
-                                <flux:table.cell class="font-mono">{{ $decision['value'] ?? 'N/A' }}</flux:table.cell>
+                                <flux:table.cell class="font-mono">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ $decision['value'] ?? 'N/A' }}</span>
+                                        @if(isset($decision['value']))
+                                            <a href="https://www.abuseipdb.com/check/{{ $decision['value'] }}" target="_blank" class="text-blue-500 hover:text-blue-400 transition" title="Check IP Reputation on AbuseIPDB">
+                                                <flux:icon.arrow-top-right-on-square class="w-4 h-4" />
+                                            </a>
+                                        @endif
+                                    </div>
+                                </flux:table.cell>
                                 <flux:table.cell>
                                     <flux:badge color="zinc" size="sm">{{ $decision['scenario'] ?? 'N/A' }}</flux:badge>
                                 </flux:table.cell>
