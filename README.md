@@ -191,6 +191,11 @@ npm run build
 - **Security Engine:** CrowdSec 1.8+
 
 ---
+<img width="1235" height="621" alt="image" src="https://github.com/user-attachments/assets/efedfabb-7cee-4558-b08f-0b7c4262aa55" />
+<img width="1255" height="617" alt="image" src="https://github.com/user-attachments/assets/6b400612-d019-4cca-9a28-43314dbc26b0" />
+<img width="1230" height="622" alt="image" src="https://github.com/user-attachments/assets/bd1b85fb-f2bb-4ebc-9e9e-debc9685b560" />
+
+
 
 ## 📝 License
 
