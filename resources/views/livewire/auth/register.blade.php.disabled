@@ -1,0 +1,59 @@
+<?php
+
+use Livewire\Attributes\Layout;
+use Livewire\Volt\Component;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
+
+new #[Layout('components.layouts.auth.simple')] class extends Component {
+    public string $name = '';
+    public string $email = '';
+    public string $password = '';
+    public string $password_confirmation = '';
+
+    /**
+     * Handle an incoming registration request.
+     */
+    public function register(): void
+    {
+        $validated = $this->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
+
+        Auth::login($user);
+
+        $this->redirect(route('dashboard', absolute: false), navigate: true);
+    }
+};
+?>
+
+<div class="flex flex-col gap-6">
+    <div class="text-center">
+        <h2 class="text-2xl font-bold text-white mb-1">Buat Akun Baru</h2>
+        <p class="text-sm text-zinc-400">Daftarkan diri Anda sebagai administrator</p>
+    </div>
+
+    <form wire:submit="register" class="flex flex-col gap-5">
+        <flux:input wire:model="name" label="Nama Lengkap" type="text" required autofocus autocomplete="name" placeholder="Administrator" class="dark:bg-zinc-950 dark:border-zinc-700 dark:text-white" />
+        <flux:input wire:model="email" label="Alamat Email" type="email" required autocomplete="email" placeholder="admin@sekolah.sch.id" class="dark:bg-zinc-950 dark:border-zinc-700 dark:text-white" />
+        <flux:input wire:model="password" label="Kata Sandi" type="password" required autocomplete="new-password" placeholder="Minimal 8 karakter" viewable class="dark:bg-zinc-950 dark:border-zinc-700 dark:text-white" />
+        <flux:input wire:model="password_confirmation" label="Konfirmasi Kata Sandi" type="password" required autocomplete="new-password" placeholder="Ulangi kata sandi" viewable class="dark:bg-zinc-950 dark:border-zinc-700 dark:text-white" />
+
+        <flux:button type="submit" variant="primary" class="w-full py-3 mt-2 cursor-pointer" wire:loading.attr="disabled">
+            <span wire:loading.remove wire:target="register">Daftar Akun</span>
+            <span wire:loading wire:target="register">Memproses...</span>
+        </flux:button>
+    </form>
+
+    <p class="text-center text-sm text-zinc-500 mt-2">
+        Sudah punya akun? <a href="{{ route('login') }}" class="text-blue-500 hover:text-blue-400 font-medium transition" wire:navigate>Masuk di sini</a>
+    </p>
+</div>
