@@ -33,6 +33,45 @@ After completing the installation and running the database seeders, you can log 
 
 ---
 
+## 👥 User Management (CLI)
+
+Since the portal currently focuses on security operations, user management (adding new admins or resetting passwords) is handled via the command line interface (CLI). 
+
+### 1. Adding a New User (Admin)
+
+To create a new administrator account, run the interactive Tinker shell:
+
+```bash
+cd /path/to/nusantara-crowdsec
+php artisan tinker
+```
+
+Inside the Tinker prompt (`>>>`), paste the following command (change the name, email, and password):
+
+```php
+\App\Models\User::create([
+    'name' => 'New Admin',
+    'email' => 'newadmin@yourdomain.com',
+    'password' => bcrypt('YourNewStrongPassword!'),
+]);
+```
+
+Type `exit` to close Tinker. The new user can now log in.
+
+### 2. Resetting a User's Password
+
+If you or another admin forgot the password, you can force-reset it directly from the terminal without needing to use the web UI.
+
+Run this single-line command (change the email and the new password):
+
+```bash
+php artisan tinker --execute="\App\Models\User::where('email', 'admin@smkmuh1blora.sch.id')->update(['password' => bcrypt('NewPassword123!')]);"
+```
+
+> ⚠️ **IMPORTANT**: You **must** use the `bcrypt()` helper function. If you update the password without hashing it, you will not be able to log in.
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -195,7 +234,7 @@ npm run build
 <img width="1255" height="617" alt="image" src="https://github.com/user-attachments/assets/6b400612-d019-4cca-9a28-43314dbc26b0" />
 <img width="1230" height="622" alt="image" src="https://github.com/user-attachments/assets/bd1b85fb-f2bb-4ebc-9e9e-debc9685b560" />
 
-
+---
 
 ## 📝 License
 
