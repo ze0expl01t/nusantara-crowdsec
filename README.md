@@ -26,7 +26,7 @@ It talks **directly to CrowdSec LAPI via HTTP**, never touching the shell — ke
 
 After completing the installation and running the database seeders, you can log in using the following default credentials:
 
-*   **Email:** `admin@smkmuh1blora.sch.id`
+*   **Email:** `admin@yourdomain.com`
 *   **Password:** `admin123`
 
 > ⚠️ **SECURITY WARNING**: You **MUST** change this password immediately after your first login via the Profile Settings page.
