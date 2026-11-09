@@ -65,7 +65,7 @@ If you or another admin forgot the password, you can force-reset it directly fro
 Run this single-line command (change the email and the new password):
 
 ```bash
-php artisan tinker --execute="\App\Models\User::where('email', 'admin@smkmuh1blora.sch.id')->update(['password' => bcrypt('NewPassword123!')]);"
+php artisan tinker --execute="\App\Models\User::where('email', 'admin@yourdomain.com')->update(['password' => bcrypt('NewPassword123!')]);"
 ```
 
 > ⚠️ **IMPORTANT**: You **must** use the `bcrypt()` helper function. If you update the password without hashing it, you will not be able to log in.

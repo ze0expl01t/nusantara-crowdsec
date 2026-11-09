@@ -3,35 +3,19 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
 
 class UsersTableSeeder extends Seeder
 {
-
-    /**
-     * Auto generated seed file
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        
-
-        \DB::table('users')->delete();
-        
-        \DB::table('users')->insert(array (
-            0 => 
-            array (
-                'id' => 1,
-                'name' => 'Administrator CrowdSec',
-                'email' => 'admin@smkmuh1blora.sch.id',
-                'email_verified_at' => NULL,
-                'password' => '$2y$12$ThU1ys2N/AkfCejt7U1vcuUrQxmgdoBVXcy2rAPBJQOfpNYfLtReu',
-                'remember_token' => NULL,
-                'created_at' => '2026-11-09 05:20:06',
-                'updated_at' => '2026-11-09 05:20:06',
-            ),
-        ));
-        
-        
+        User::updateOrCreate(
+            ['email' => 'admin@yourdomain.com'],
+            [
+                'name' => 'Administrator',
+                'password' => '$2y$12$vhV7AkTLGgB9jkPNk.MDtuepuHEjh8U86GUSEIVvqwPKHVmhMbMta',
+                'email_verified_at' => now(),
+            ]
+        );
     }
 }
