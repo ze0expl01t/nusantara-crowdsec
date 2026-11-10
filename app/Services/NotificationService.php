@@ -24,10 +24,14 @@ class NotificationService
         $country = $alert['source']['cn'] ?? 'Unknown';
         $message = "🚨 *CrowdSec Alert*\nScenario: {$scenario}\nIP: {$ip}\nCountry: {$country}\nTime: " . now()->format('Y-m-d H:i:s');
 
+        // KIRIM EMAIL (Menggunakan dynamic config dari Database)
         if (Setting::get('notify_email_enabled') === 'true') {
             $recipient = Setting::get('notify_email_recipient');
             if ($recipient) {
                 try {
+                    // Inject SMTP Config secara dinamis
+                    $this->setDynamicSmtpConfig();
+                    
                     Mail::raw($message, function ($mail) use ($recipient, $scenario) {
                         $mail->to($recipient)->subject("CrowdSec Alert: {$scenario}");
                     });
@@ -37,6 +41,7 @@ class NotificationService
             }
         }
 
+        // KIRIM TELEGRAM
         if (Setting::get('notify_telegram_enabled') === 'true') {
             $token = Setting::get('notify_telegram_token');
             $chatId = Setting::get('notify_telegram_chat_id');
@@ -52,5 +57,33 @@ class NotificationService
                 }
             }
         }
+    }
+
+    public function testEmail($recipient)
+    {
+        try {
+            $this->setDynamicSmtpConfig();
+            Mail::raw("This is a test email from Nusantara CrowdSec Portal.", function ($mail) use ($recipient) {
+                $mail->to($recipient)->subject("CrowdSec Portal - SMTP Test");
+            });
+            return true;
+        } catch (\Exception $e) {
+            Log::error("SMTP Test Failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function setDynamicSmtpConfig()
+    {
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => Setting::get('smtp_host', '127.0.0.1'),
+            'mail.mailers.smtp.port' => Setting::get('smtp_port', 2525),
+            'mail.mailers.smtp.username' => Setting::get('smtp_username'),
+            'mail.mailers.smtp.password' => Setting::get('smtp_password'),
+            'mail.mailers.smtp.encryption' => Setting::get('smtp_encryption'),
+            'mail.from.address' => Setting::get('smtp_from_address', 'noreply@localhost'),
+            'mail.from.name' => Setting::get('smtp_from_name', 'CrowdSec Portal'),
+        ]);
     }
 }
