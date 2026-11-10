@@ -26,7 +26,7 @@
                 </div>
                 <div>
                     <flux:heading size="lg">Total Alerts</flux:heading>
-                    <flux:text class="text-3xl font-bold mt-1 text-gray-900">{{ $totalAlerts }}</flux:text>
+                    <flux:text class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">{{ $totalAlerts }}</flux:text>
                 </div>
             </flux:card>
 

@@ -9,6 +9,7 @@ use App\Livewire\AllowlistManager;
 use App\Livewire\AuditLogViewer;
 use App\Livewire\ReportManager;
 use App\Livewire\SiteSettings;
+use App\Livewire\NotificationSettings;
 use App\Livewire\BackupManager;
 
 Route::view('/', 'welcome')->name('home');
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('audit-logs', AuditLogViewer::class)->name('audit-logs');
     Route::get('reports', ReportManager::class)->name('reports');
     Route::get('settings/site', SiteSettings::class)->name('settings.site');
+    Route::get('settings/notifications', NotificationSettings::class)->name('settings.notifications');
     Route::get('settings/backup', BackupManager::class)->name('settings.backup');
 });
 

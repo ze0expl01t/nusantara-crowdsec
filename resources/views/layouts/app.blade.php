@@ -35,6 +35,10 @@
 
         <flux:navlist variant="outline">
             <flux:navlist.item icon="cog-6-tooth" href="/settings/profile" :current="request()->routeIs('settings.profile')" wire:navigate>Profile Settings</flux:navlist.item>
+            
+            <flux:navlist.item icon="bell" href="/settings/notifications" :current="request()->routeIs('settings.notifications')" wire:navigate>
+                Notifications
+            </flux:navlist.item>
             <flux:navlist.item icon="paint-brush" href="/settings/site" :current="request()->routeIs('settings.site')" wire:navigate>Web Appearance</flux:navlist.item>
             <flux:navlist.item icon="circle-stack" href="/settings/backup" :current="request()->routeIs('settings.backup')" wire:navigate>Data Backup</flux:navlist.item>
         </flux:navlist>
