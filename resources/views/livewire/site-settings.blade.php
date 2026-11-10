@@ -82,6 +82,8 @@
                                         <option value="lock-closed">Gembok (Lock)</option>
                                         <option value="server">Server</option>
                                         <option value="star">Bintang (Star)</option>
+                                        <option value="user">Orang (User)</option>
+                                        <option value="users">Grup (Group)</option>
                                     </flux:select>
                                 </div>
                                 
