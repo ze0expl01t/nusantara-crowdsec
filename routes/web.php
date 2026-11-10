@@ -9,8 +9,8 @@ use App\Livewire\AllowlistManager;
 use App\Livewire\AuditLogViewer;
 use App\Livewire\ReportManager;
 use App\Livewire\SiteSettings;
-use App\Livewire\NotificationSettings;
 use App\Livewire\BackupManager;
+use App\Livewire\NotificationSettings;
 
 Route::view('/', 'welcome')->name('home');
 

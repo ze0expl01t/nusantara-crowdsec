@@ -18,7 +18,7 @@
             <flux:card>
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="lg">Email Notification</flux:heading>
-                    <flux:switch wire:model="email_enabled" />
+                    <flux:switch wire:model.live="email_enabled" />
                 </div>
                 @if($email_enabled)
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,7 +51,7 @@
             <flux:card>
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="lg">Telegram Notification</flux:heading>
-                    <flux:switch wire:model="telegram_enabled" />
+                    <flux:switch wire:model.live="telegram_enabled" />
                 </div>
                 @if($telegram_enabled)
                     <div class="space-y-4">
@@ -74,7 +74,7 @@
                             <span class="text-sm font-mono text-zinc-700 dark:text-zinc-300">{{ basename($scenario) }}</span>
                         </label>
                     @empty
-                        <div class="text-sm text-zinc-500 p-2">No recent scenarios found. Trigger some attacks first.</div>
+                        <div class="text-sm text-zinc-500 p-2">No recent scenarios found.</div>
                     @endforelse
                 </div>
             </flux:card>
