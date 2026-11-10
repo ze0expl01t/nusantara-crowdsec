@@ -46,7 +46,7 @@
         <flux:dropdown position="top" align="start">
             <flux:profile class="cursor-pointer" :name="auth()->user()->name ?? 'Administrator'" :initials="substr(auth()->user()->name ?? 'A', 0, 2)" />
             <flux:menu>
-                <div class="px-4 py-2 text-xs text-zinc-500">{{ auth()->user()->email ?? '' }}</div>
+                <div class="px-4 py-2 text-xs text-zinc-500 dark:text-zinc-300">{{ auth()->user()->email ?? '' }}</div>
                 <flux:menu.separator />
                 <flux:menu.item icon="arrow-right-start-on-rectangle" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</flux:menu.item>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">@csrf</form>
