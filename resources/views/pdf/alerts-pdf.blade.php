@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Keamanan CrowdSec</title>
+    <title>CrowdSec Security Report</title>
     <style>
         body { font-family: sans-serif; font-size: 11px; color: #333; }
         h2 { text-align: center; margin-bottom: 5px; }
@@ -32,7 +32,7 @@
         @if($barBase64)
             <div class="chart-box">
                 <div class="chart-title">Top 5 Attack Scenarios</div>
-                <img src="{{ $barBase64 }}" alt="Skenario Chart">
+                <img src="{{ $barBase64 }}" alt="Scenario Chart">
             </div>
         @endif
     </div>
@@ -42,9 +42,9 @@
         <thead>
             <tr>
                 <th>Time</th>
-                <th>IP Penyerang</th>
+                <th>Attacker IP</th>
                 <th>Country</th>
-                <th>Skenario</th>
+                <th>Scenario</th>
                 <th>Decision</th>
             </tr>
         </thead>

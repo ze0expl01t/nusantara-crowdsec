@@ -153,7 +153,7 @@
                 if(window.scenarioChartInstance) window.scenarioChartInstance.destroy();
                 window.scenarioChartInstance = new Chart(ctxScenario, {
                     type: 'radar',
-                    data: { labels: chartData.scenarios.labels, datasets: [{ label: 'Serangan', data: chartData.scenarios.data, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6', borderWidth: 2 }] },
+                    data: { labels: chartData.scenarios.labels, datasets: [{ label: 'Attacks', data: chartData.scenarios.data, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6', borderWidth: 2 }] },
                     options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, ticks: { display: false }, pointLabels: { color: textColor, font: { size: 12 } }, grid: { color: isDark ? '#374151' : '#e5e7eb' }, angleLines: { color: isDark ? '#374151' : '#e5e7eb' } } }, plugins: { legend: { display: false } } }
                 });
             }
@@ -163,7 +163,7 @@
                 if(window.trendChartInstance) window.trendChartInstance.destroy();
                 window.trendChartInstance = new Chart(ctxTrend, {
                     type: 'bar',
-                    data: { labels: chartData.trends.labels, datasets: [{ label: 'Jumlah Blokir', data: chartData.trends.data, backgroundColor: '#10b981', borderRadius: 4, barThickness: 40 }] },
+                    data: { labels: chartData.trends.labels, datasets: [{ label: 'Blocked IPs', data: chartData.trends.data, backgroundColor: '#10b981', borderRadius: 4, barThickness: 40 }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: isDark ? '#374151' : '#e5e7eb' } }, x: { ticks: { color: textColor, maxRotation: 45, minRotation: 45 }, grid: { display: false } } } }
                 });
             }

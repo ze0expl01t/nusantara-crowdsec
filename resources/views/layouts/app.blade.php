@@ -25,7 +25,7 @@
             <flux:navlist.item icon="globe-alt" href="/attack-map" :current="request()->routeIs('attack-map')" wire:navigate>
                 Attack Map
             </flux:navlist.item>
-            <flux:navlist.item icon="shield-exclamation" href="/decisions" :current="request()->routeIs('decisions')" wire:navigate>Decisions (Blokir)</flux:navlist.item>
+            <flux:navlist.item icon="shield-exclamation" href="/decisions" :current="request()->routeIs('decisions')" wire:navigate>Decisions</flux:navlist.item>
             <flux:navlist.item icon="check-badge" href="/allowlists" :current="request()->routeIs('allowlists')" wire:navigate>Allowlist</flux:navlist.item>
             <flux:navlist.item icon="document-text" href="/audit-logs" :current="request()->routeIs('audit-logs')" wire:navigate>Audit Logs</flux:navlist.item>
             <flux:navlist.item icon="chart-bar" href="/reports" :current="request()->routeIs('reports')" wire:navigate>Reports</flux:navlist.item>

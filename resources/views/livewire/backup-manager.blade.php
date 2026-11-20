@@ -37,7 +37,7 @@
         </div>
 
         @if($message)
-            <flux:callout color="{{ str_contains($message, 'Gagal') ? 'red' : 'green' }}" icon="{{ str_contains($message, 'Gagal') ? 'exclamation-triangle' : 'check-circle' }}">
+            <flux:callout color="{{ str_contains($message, 'Failed') ? 'red' : 'green' }}" icon="{{ str_contains($message, 'Failed') ? 'exclamation-triangle' : 'check-circle' }}">
                 {{ $message }}
             </flux:callout>
         @endif

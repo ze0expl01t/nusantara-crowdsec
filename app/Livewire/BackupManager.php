@@ -108,7 +108,7 @@ class BackupManager extends Component
         
         if (Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);
-            $this->message = "File backup {$filename} berhasil dihapus.";
+            $this->message = "Backup file {$filename} has been deleted.";
             $this->loadData();
         } else {
             $this->message = "File tidak ditemukan.";
@@ -142,7 +142,7 @@ class BackupManager extends Component
             $this->message = 'Old backup cleanup successful.';
             $this->loadData();
         } catch (\Exception $e) {
-            $this->message = 'Gagal membersihkan backup: ' . $e->getMessage();
+            $this->message = 'Failed to clean up backups: ' . $e->getMessage();
         }
     }
 

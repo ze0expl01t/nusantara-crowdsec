@@ -28,12 +28,12 @@ class SiteSettings extends Component
         $savedFeatures = json_decode(Setting::get('landing_features', '[]'), true);
         if (empty($savedFeatures)) {
             $this->features = [
-                ['title' => 'Monitoring Real-time', 'desc' => 'Lihat grafik attacks dan status blokir IP secara langsung.', 'color' => 'blue', 'icon' => 'chart-bar'],
-                ['title' => 'Manajemen Blokir', 'desc' => 'Kelola daftar IP yang diblokir dan lakukan Unban dengan cepat.', 'color' => 'red', 'icon' => 'shield-exclamation'],
+                ['title' => 'Monitoring Real-time', 'desc' => 'View live attack charts and active IP block status in real time.', 'color' => 'blue', 'icon' => 'chart-bar'],
+                ['title' => 'Manajemen Blokir', 'desc' => 'Manage blocked IP decisions and unban addresses quickly.', 'color' => 'red', 'icon' => 'shield-exclamation'],
                 ['title' => 'Allowlist IP', 'desc' => 'Tambahkan IP tepercaya agar tidak pernah diblokir oleh sistem.', 'color' => 'green', 'icon' => 'check-badge'],
-                ['title' => 'Audit Log', 'desc' => 'Lihat riwayat aktivitas administratif untuk keperluan audit.', 'color' => 'zinc', 'icon' => 'document-text'],
+                ['title' => 'Audit Log', 'desc' => 'Inspect administrative activity history for audit compliance.', 'color' => 'zinc', 'icon' => 'document-text'],
                 ['title' => 'Dokumentasi', 'desc' => 'Buka panduan resmi CrowdSec di situs eksternal.', 'color' => 'blue', 'icon' => 'book-open'],
-                ['title' => 'Pengaturan Akun', 'desc' => 'Ubah profil, kata sandi, dan preferensi tampilan.', 'color' => 'zinc', 'icon' => 'cog-6-tooth'],
+                ['title' => 'Pengaturan Akun', 'desc' => 'Update profile details, password, and appearance preferences.', 'color' => 'zinc', 'icon' => 'cog-6-tooth'],
             ];
         } else {
             foreach ($savedFeatures as $key => $feature) {
@@ -55,7 +55,7 @@ class SiteSettings extends Component
             if ($result['machine_name']) Setting::updateOrCreate(['key' => 'crowdsec_machine_name'], ['value' => $result['machine_name']]);
             if ($result['machine_password']) Setting::updateOrCreate(['key' => 'crowdsec_machine_password'], ['value' => $result['machine_password']]);
             
-            session()->flash('message', 'Konfigurasi CrowdSec berhasil dideteksi dan disimpan!');
+            session()->flash('message', 'CrowdSec configuration has been detected and saved successfully!');
         } else {
             session()->flash('error', $result['message']);
         }

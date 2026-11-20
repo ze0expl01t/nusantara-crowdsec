@@ -14,7 +14,7 @@
         </div>
 
         @if(!$isConnected)
-            <flux:callout color="red" icon="exclamation-triangle">Gagal terhubung ke CrowdSec LAPI. Peta tidak dapat dimuat.</flux:callout>
+            <flux:callout color="red" icon="exclamation-triangle">Failed to connect to CrowdSec LAPI. Attack map cannot be loaded.</flux:callout>
         @endif
 
         <!-- Container Peta -->
