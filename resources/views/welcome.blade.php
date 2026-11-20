@@ -178,7 +178,6 @@
                     style="transition-delay: {{ min($index * 60, 300) }}ms;"
                     class="cscli-reveal group block p-6 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl {{ $style['glow'] }} hover:bg-zinc-800/80 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
                 >
-                    <div class="cscli-pulse-line opacity-60 mb-4"></div>
                     <div class="flex items-center gap-3 mb-3">
                         <div class="p-2 {{ $style['icon'] }} rounded-lg group-hover:scale-110 transition-transform">
                             <flux:icon :name="$icon" class="size-5" />
