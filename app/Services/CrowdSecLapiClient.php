@@ -97,15 +97,28 @@ class CrowdSecLapiClient
     public function deleteDecision(string $id): bool
     {
         try {
-            return $this->machineClient()->delete("/v1/decisions/{$id}")->successful();
-        } catch (\Exception $e) { return false; }
+            $res = $this->machineClient()->delete("/v1/decisions/{$id}");
+            if (! $res->successful()) {
+                Log::warning("LAPI deleteDecision failed for {$id}: " . $res->status());
+            }
+            return $res->successful();
+        } catch (\Exception $e) {
+            Log::error("LAPI deleteDecision ({$id}): " . $e->getMessage());
+            return false;
+        }
     }
 
     public function isConnected(): bool
     {
-        try { 
+        try {
             $res = $this->bouncerClient()->get('/v1/decisions', ['limit' => 1]);
-            return $res->successful(); 
-        } catch (\Exception $e) { return false; }
+            if (! $res->successful()) {
+                Log::warning('LAPI isConnected check returned HTTP ' . $res->status());
+            }
+            return $res->successful();
+        } catch (\Exception $e) {
+            Log::error('LAPI isConnected: ' . $e->getMessage());
+            return false;
+        }
     }
 }

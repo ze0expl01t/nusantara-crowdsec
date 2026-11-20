@@ -1,13 +1,13 @@
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-        
-        <!-- Header & Tombol Export -->
+
+        <!-- Header & Export Actions -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                 <flux:heading size="xl">Security Reports (Alerts)</flux:heading>
-                <flux:subheading>Statistics and history of attacks detected by CrowdSec.</flux:subheading>
+                <flux:subheading>Statistics, filtering, and history of security alerts detected by CrowdSec (up to 100 latest alerts).</flux:subheading>
             </div>
-            
+
             <div class="flex flex-wrap gap-2">
                 <flux:button wire:click="exportPdf" icon="document-arrow-down" variant="primary" class="cursor-pointer">
                     Export PDF
@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <!-- Kartu Statistik & Chart -->
+        <!-- Summary Card & Chart -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <flux:card class="flex items-center gap-4">
                 <div class="p-3 rounded-full bg-blue-100 text-blue-600">
@@ -27,6 +27,7 @@
                 <div>
                     <flux:heading size="lg">Total Alerts</flux:heading>
                     <flux:text class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">{{ $totalAlerts }}</flux:text>
+                    <flux:text class="text-xs text-zinc-500 mt-1">Showing {{ $filteredCount }} matching records</flux:text>
                 </div>
             </flux:card>
 
@@ -38,27 +39,69 @@
             </flux:card>
         </div>
 
-        <!-- Tabel Data -->
+        <!-- Filter Bar & Alerts Table -->
         <flux:card class="p-0 overflow-hidden mt-6">
-            <div class="p-6 border-b border-zinc-200 dark:border-zinc-700">
-                <flux:heading size="lg">Latest Alerts</flux:heading>
+            <div class="p-6 border-b border-zinc-200 dark:border-zinc-700 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <flux:heading size="lg">Latest Alerts</flux:heading>
+                    <flux:text class="text-xs text-zinc-500">Filtered records: {{ $filteredCount }} / {{ $totalAlerts }}</flux:text>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <flux:input
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Search IP, country, scenario..."
+                        icon="magnifying-glass"
+                    />
+
+                    <flux:select wire:model.live="selectedScenario" placeholder="All Scenarios">
+                        <flux:select.option value="">All Scenarios</flux:select.option>
+                        @foreach ($scenarioOptions as $scOption)
+                            <flux:select.option value="{{ $scOption }}">{{ $scOption }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:select wire:model.live="selectedCountry" placeholder="All Countries">
+                        <flux:select.option value="">All Countries</flux:select.option>
+                        @foreach ($countryOptions as $cnOption)
+                            <flux:select.option value="{{ $cnOption }}">{{ $cnOption }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:select wire:model.live="decisionFilter">
+                        <flux:select.option value="all">All Decisions</flux:select.option>
+                        <flux:select.option value="banned">Banned / Active Decision</flux:select.option>
+                        <flux:select.option value="none">No Decision (none)</flux:select.option>
+                    </flux:select>
+
+                    <flux:button wire:click="resetFilters" variant="ghost" icon="arrow-path" class="cursor-pointer">
+                        Reset
+                    </flux:button>
+                </div>
             </div>
+
             <div class="px-6 py-2">
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Time</flux:table.column>
-                        <flux:table.column>IP Penyerang</flux:table.column>
+                        <flux:table.column>Attacker IP</flux:table.column>
                         <flux:table.column>Country</flux:table.column>
-                        <flux:table.column>Skenario</flux:table.column>
+                        <flux:table.column>Scenario</flux:table.column>
                         <flux:table.column>Decision</flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>
                         @forelse ($paginatedAlerts as $alert)
+                            @php
+                                $countryCode = trim((string) ($alert['source']['cn'] ?? ''));
+                                $countryDisplay = $countryCode !== '' ? $countryCode : 'Unknown';
+                                $scenarioRaw = (string) ($alert['scenario'] ?? '');
+                                $scenarioDisplay = $scenarioRaw !== '' ? $scenarioRaw : 'Unknown';
+                            @endphp
                             <flux:table.row :key="$alert['id'] ?? md5(json_encode($alert))">
                                 <flux:table.cell class="whitespace-nowrap">{{ !empty($alert['created_at']) ? \Carbon\Carbon::parse($alert['created_at'])->format('d/m/Y H:i') : '-' }}</flux:table.cell>
                                 <flux:table.cell class="font-mono">{{ $alert['source']['value'] ?? 'N/A' }}</flux:table.cell>
-                                <flux:table.cell>{{ $alert['source']['cn'] ?? '-' }}</flux:table.cell>
-                                <flux:table.cell><flux:badge color="zinc" size="sm">{{ $alert['scenario'] ?? 'Unknown' }}</flux:badge></flux:table.cell>
+                                <flux:table.cell>{{ $countryDisplay }}</flux:table.cell>
+                                <flux:table.cell><flux:badge color="zinc" size="sm">{{ $scenarioDisplay }}</flux:badge></flux:table.cell>
                                 <flux:table.cell>
                                     @if(!empty($alert['decisions'][0]['type']))
                                         <flux:badge color="red">{{ $alert['decisions'][0]['type'] }}</flux:badge>
@@ -69,7 +112,7 @@
                             </flux:table.row>
                         @empty
                             <flux:table.row>
-                                <flux:table.cell colspan="5" class="text-center py-6 text-zinc-500">No alert data available.</flux:table.cell>
+                                <flux:table.cell colspan="5" class="text-center py-6 text-zinc-500">No alert data matches the current filter.</flux:table.cell>
                             </flux:table.row>
                         @endforelse
                     </flux:table.rows>
@@ -88,17 +131,21 @@
     @script
     <script>
         const ctxReport = document.getElementById('reportChart');
-        if (ctxReport) {
+        if (ctxReport && typeof Chart !== 'undefined') {
+            if (window.__cscliReportChart) {
+                window.__cscliReportChart.destroy();
+            }
+
             const chartData = @json($chartData);
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#e5e7eb' : '#374151';
 
-            new Chart(ctxReport, {
+            window.__cscliReportChart = new Chart(ctxReport, {
                 type: 'bar',
                 data: {
                     labels: chartData.scenarios.labels,
                     datasets: [{
-                        label: 'Jumlah Serangan',
+                        label: 'Alerts Count',
                         data: chartData.scenarios.data,
                         backgroundColor: '#3b82f6',
                         borderRadius: 4

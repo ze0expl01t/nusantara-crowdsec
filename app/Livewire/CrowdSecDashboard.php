@@ -52,12 +52,16 @@ class CrowdSecDashboard extends Component
             $this->generateChartData($this->decisions, $alerts);
             
             if ($this->totalDecisions > 0) {
-                AuditLog::create([
-                    'action'  => 'refresh_dashboard',
-                    'target'  => 'lapi',
-                    'actor'   => Auth::user()->email ?? 'system',
-                    'meta'    => ['total_fetched' => $this->totalDecisions]
-                ]);
+                $actor = Auth::user()->email ?? 'system';
+                $auditKey = 'crowdsec:audit:refresh_dashboard:' . md5($actor);
+                if (\Illuminate\Support\Facades\Cache::add($auditKey, 1, now()->addMinutes(15))) {
+                    AuditLog::create([
+                        'action'  => 'refresh_dashboard',
+                        'target'  => 'lapi',
+                        'actor'   => $actor,
+                        'meta'    => ['total_fetched' => $this->totalDecisions],
+                    ]);
+                }
             }
         } else {
             $this->decisions = [];
