@@ -47,7 +47,7 @@ class NotificationService
             $chatId = Setting::get('notify_telegram_chat_id');
             if ($token && $chatId) {
                 try {
-                    Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                    Http::timeout(5)->post("https://api.telegram.org/bot{$token}/sendMessage", [
                         'chat_id' => $chatId,
                         'text' => $message,
                         'parse_mode' => 'Markdown'

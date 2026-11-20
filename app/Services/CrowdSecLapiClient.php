@@ -67,9 +67,11 @@ class CrowdSecLapiClient
                 if (is_array($data)) return $data;
             }
             return [];
-        } catch (\Exception $e) { return []; }
+        } catch (\Exception $e) {
+            Log::error('LAPI getAlerts: ' . $e->getMessage());
+            return [];
+        }
     }
-
 
     public function createDecision(string $ip, string $duration, string $reason, string $type = 'ban'): bool
     {

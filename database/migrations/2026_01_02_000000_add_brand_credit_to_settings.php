@@ -2,9 +2,14 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
+        if (! Schema::hasTable('settings')) {
+            return;
+        }
+
         // Sisipkan kredit default jika belum ada
         if (!DB::table('settings')->where('key', 'brand_credit')->exists()) {
             DB::table('settings')->insert([
@@ -25,6 +30,10 @@ return new class extends Migration {
         }
     }
     public function down(): void {
+        if (! Schema::hasTable('settings')) {
+            return;
+        }
+
         DB::table('settings')->whereIn('key', ['brand_credit', 'brand_credit_hash'])->delete();
     }
 };

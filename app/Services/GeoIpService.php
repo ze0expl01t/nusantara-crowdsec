@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GeoIpService
 {
+    private const NEGATIVE_SENTINEL = '__geoip_failed__';
+
     public function getAttackPaths(array $ips): array
     {
         $result = [];
@@ -19,35 +22,53 @@ class GeoIpService
                 continue;
             }
 
-            $geo = Cache::remember("geo_ip_v2_{$ip}", 86400, function () use ($ip) {
-                try {
-                    $res = Http::timeout(3)->get("https://freeipapi.com/api/json/{$ip}");
-                    if ($res->successful() && $res->json('latitude') !== null) {
-                        return [
-                            'lat' => $res->json('latitude'),
-                            'lon' => $res->json('longitude'),
-                            'countryCode' => $res->json('countryCode') ?? 'Unknown',
-                            'countryName' => $res->json('countryName') ?? 'Unknown',
-                        ];
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning("GeoIP failed for {$ip}: " . $e->getMessage());
-                }
-                return null;
-            });
+            $cacheKey = "geo_ip_v3_{$ip}";
+            $cached = Cache::get($cacheKey);
 
-            if ($geo) {
+            if ($cached === null) {
+                $geo = $this->fetchGeo($ip);
+                if (is_array($geo)) {
+                    Cache::put($cacheKey, $geo, 86400);
+                    $cached = $geo;
+                } else {
+                    // Negative cache selama 20 menit agar IP yang timeout tidak memicu hang berulang
+                    Cache::put($cacheKey, self::NEGATIVE_SENTINEL, 1200);
+                    $cached = self::NEGATIVE_SENTINEL;
+                }
+            }
+
+            if (is_array($cached)) {
                 $result[] = [
                     'coords' => [
-                        [$geo['lon'], $geo['lat']], 
-                        $targetCoords               
+                        [$cached['lon'], $cached['lat']],
+                        $targetCoords,
                     ],
                     'ip' => $ip,
-                    'countryCode' => $geo['countryCode'],
-                    'countryName' => $geo['countryName']
+                    'countryCode' => $cached['countryCode'],
+                    'countryName' => $cached['countryName'],
                 ];
             }
         }
+
         return $result;
+    }
+
+    private function fetchGeo(string $ip): ?array
+    {
+        try {
+            $res = Http::timeout(3)->get("https://freeipapi.com/api/json/{$ip}");
+            if ($res->successful() && $res->json('latitude') !== null && $res->json('longitude') !== null) {
+                return [
+                    'lat' => $res->json('latitude'),
+                    'lon' => $res->json('longitude'),
+                    'countryCode' => $res->json('countryCode') ?? 'Unknown',
+                    'countryName' => $res->json('countryName') ?? 'Unknown',
+                ];
+            }
+        } catch (\Throwable $e) {
+            Log::warning("GeoIP failed for {$ip}: " . $e->getMessage());
+        }
+
+        return null;
     }
 }
