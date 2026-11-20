@@ -117,6 +117,7 @@
             </div>
         </div>
     </nav>
+    <div class="sticky top-16 z-40 w-full pointer-events-none"><div class="cscli-pulse-line"></div></div>
 
     <!-- MAIN CONTENT -->
     <main class="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 space-y-14">
