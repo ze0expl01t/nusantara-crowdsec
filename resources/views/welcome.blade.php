@@ -64,14 +64,14 @@
     <main class="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div class="text-center max-w-3xl mx-auto mb-16">
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-6 drop-shadow-lg">
-                {{ \App\Models\Setting::get('hero_title', 'Dokumentasi & Portal CrowdSec') }}
+                {{ \App\Models\Setting::get('hero_title', 'CrowdSec Portal & Documentation') }}
             </h1>
             <p class="text-lg sm:text-xl text-zinc-400 leading-relaxed mb-8">
-                {{ \App\Models\Setting::get('hero_subtitle', 'Panduan lengkap...') }}
+                {{ \App\Models\Setting::get('hero_subtitle', 'Real-time threat intelligence, automated mitigation, and security monitoring portal.') }}
             </p>
             <div class="flex items-center justify-center gap-4">
-                <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition shadow-lg shadow-blue-900/50">Buka Dashboard</a>
-                <a href="#quickstart" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-zinc-300 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 hover:bg-zinc-800 transition">Mulai Cepat</a>
+                <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition shadow-lg shadow-blue-900/50">Open Dashboard</a>
+                <a href="#quickstart" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-zinc-300 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 hover:bg-zinc-800 transition">Quick Start</a>
             </div>
         </div>
 
@@ -81,7 +81,7 @@
                 $features = json_decode(\App\Models\Setting::get('landing_features', '[]'), true);
                 if(empty($features)) {
                     $features = [
-                        ['title' => 'Monitoring Real-time', 'desc' => '...', 'color' => 'blue', 'icon' => 'chart-bar'],
+                        ['title' => 'Real-Time Monitoring', 'desc' => 'Live visibility into incoming alerts, active decisions, and threat telemetry.', 'color' => 'blue', 'icon' => 'chart-bar'],
                     ];
                 }
                 
