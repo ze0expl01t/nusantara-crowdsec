@@ -2,9 +2,7 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
         <!-- Teks Informasi -->
         <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">
-            Menampilkan <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->firstItem() }}</span> 
-            sampai <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->lastItem() }}</span> 
-            dari <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->total() }}</span> data
+            Showing <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->firstItem() }}</span> to <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->lastItem() }}</span> of <span class="font-medium text-zinc-900 dark:text-white">{{ $paginator->total() }}</span> results
         </flux:text>
 
         <!-- Tombol Navigasi -->
