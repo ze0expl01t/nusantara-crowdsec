@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BackupDownloadController;
+
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Livewire\CrowdSecDashboard;
@@ -24,6 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings/site', SiteSettings::class)->name('settings.site');
     Route::get('settings/notifications', NotificationSettings::class)->name('settings.notifications');
     Route::get('settings/backup', BackupManager::class)->name('settings.backup');
+    Route::get('settings/backup/download/{filename}', BackupDownloadController::class)->name('settings.backup.download');
 });
 
 Route::middleware(['auth'])->group(function () {

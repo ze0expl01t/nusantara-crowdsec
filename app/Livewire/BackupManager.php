@@ -120,41 +120,7 @@ class BackupManager extends Component
             return null;
         }
 
-        $fullPath = $disk->path($relativePath);
-        if (! is_file($fullPath) || ! is_readable($fullPath)) {
-            Log::warning("BackupManager downloadBackup unreadable file: {$fullPath}");
-            $this->message = 'Failed to read backup file.';
-
-            return null;
-        }
-
-        @ini_set('memory_limit', '256M');
-
-        $headers = [
-            'Content-Type' => 'application/zip',
-            'Content-Length' => (string) filesize($fullPath),
-        ];
-
-        return response()->streamDownload(function () use ($fullPath) {
-            $handle = fopen($fullPath, 'rb');
-            if ($handle === false) {
-                return;
-            }
-
-            while (! feof($handle)) {
-                $chunk = fread($handle, 8192);
-                if ($chunk === false) {
-                    break;
-                }
-                echo $chunk;
-                if (function_exists('ob_flush') && ob_get_level() > 0) {
-                    @ob_flush();
-                }
-                flush();
-            }
-
-            fclose($handle);
-        }, $safeName, $headers);
+        return redirect()->route('settings.backup.download', ['filename' => $safeName]);
     }
 
     public function deleteBackup($filename)
