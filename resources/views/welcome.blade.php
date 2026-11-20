@@ -136,9 +136,6 @@
             <p class="text-lg sm:text-xl text-zinc-400 leading-relaxed mb-6">
                 {{ \App\Models\Setting::get('hero_subtitle', 'Real-time threat intelligence, automated mitigation, and security monitoring portal.') }}
             </p>
-            <div class="max-w-md mx-auto mb-8 rounded-full overflow-hidden">
-                <div class="cscli-pulse-line"></div>
-            </div>
             <div class="flex flex-wrap items-center justify-center gap-4">
                 <a href="{{ auth()->check() ? url('/dashboard') : route('login') }}" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition shadow-lg shadow-blue-900/50">
                     Open Dashboard
