@@ -1,25 +1,33 @@
 <?php
+
 namespace App\Livewire;
 
-use Livewire\Component;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Number;
+use Livewire\Component;
 
 class BackupManager extends Component
 {
     public $backups = [];
+
     public $message = '';
+
     public $isGenerating = false;
-    
-    // Statistik
+
+    // Statistics
     public $totalBackups = 0;
+
     public $totalSize = '0 MB';
+
     public $lastBackup = 'None yet';
+
     public $diskFree = '0 GB';
-    
+
     // Filter
-    public $filter = 'semua'; 
+    public $filter = 'semua';
 
     public function mount()
     {
@@ -29,18 +37,18 @@ class BackupManager extends Component
     public function setFilter($type)
     {
         $this->filter = $type;
-        $this->loadData(); // Load ulang saat filter diubah agar tabel terupdate
+        $this->loadData();
     }
 
     public function loadData()
     {
         $disk = Storage::disk('local');
-        $backupName = config('backup.backup.name', 'Laravel');
-        
+        $backupName = (string) config('backup.backup.name', 'Laravel');
+
         $freeSpace = @disk_free_space(storage_path());
         $this->diskFree = $freeSpace ? Number::fileSize($freeSpace, precision: 2) : 'N/A';
 
-        if (!$disk->exists($backupName)) {
+        if (! $disk->exists($backupName)) {
             $disk->makeDirectory($backupName);
         }
 
@@ -50,12 +58,16 @@ class BackupManager extends Component
         $latestTime = 0;
 
         foreach ($files as $file) {
-            if (!str_ends_with($file, '.zip')) continue;
+            if (! str_ends_with($file, '.zip')) {
+                continue;
+            }
 
             $size = $disk->size($file);
             $time = $disk->lastModified($file);
             $totalBytes += $size;
-            if ($time > $latestTime) $latestTime = $time;
+            if ($time > $latestTime) {
+                $latestTime = $time;
+            }
 
             $filename = basename($file);
             $type = 'full';
@@ -71,47 +83,98 @@ class BackupManager extends Component
                 'size' => Number::fileSize($size, precision: 2),
                 'time_raw' => $time,
                 'time' => date('d/m/Y H:i', $time),
-                'type' => $type
+                'type' => $type,
             ];
         }
 
         $this->totalBackups = count($allBackups);
         $this->totalSize = Number::fileSize($totalBytes, precision: 2);
-        $this->lastBackup = $latestTime > 0 ? \Carbon\Carbon::createFromTimestamp($latestTime)->diffForHumans() : 'None yet';
+        $this->lastBackup = $latestTime > 0 ? Carbon::createFromTimestamp($latestTime)->diffForHumans() : 'None yet';
 
         if ($this->filter !== 'semua') {
-            $allBackups = array_filter($allBackups, fn($b) => $b['type'] === $this->filter);
+            $allBackups = array_filter($allBackups, fn ($b) => $b['type'] === $this->filter);
         }
 
-        usort($allBackups, fn($a, $b) => $b['time_raw'] <=> $a['time_raw']);
-        $this->backups = array_values($allBackups); // Re-index array
+        usort($allBackups, fn ($a, $b) => $b['time_raw'] <=> $a['time_raw']);
+        $this->backups = array_values($allBackups);
     }
 
     // --- ACTIONS ---
-    
+
     public function downloadBackup($filename)
     {
-        $backupName = config('backup.backup.name', 'Laravel');
-        $path = $backupName . '/' . $filename;
-        
-        if (Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->download($path);
+        $safeName = basename((string) $filename);
+        if ($safeName === '' || ! str_ends_with($safeName, '.zip')) {
+            $this->message = 'Backup file not found.';
+
+            return null;
         }
-        
-        $this->message = "File tidak ditemukan.";
+
+        $backupName = (string) config('backup.backup.name', 'Laravel');
+        $relativePath = $backupName . '/' . $safeName;
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($relativePath)) {
+            $this->message = 'Backup file not found.';
+
+            return null;
+        }
+
+        $fullPath = $disk->path($relativePath);
+        if (! is_file($fullPath) || ! is_readable($fullPath)) {
+            Log::warning("BackupManager downloadBackup unreadable file: {$fullPath}");
+            $this->message = 'Failed to read backup file.';
+
+            return null;
+        }
+
+        @ini_set('memory_limit', '256M');
+
+        $headers = [
+            'Content-Type' => 'application/zip',
+            'Content-Length' => (string) filesize($fullPath),
+        ];
+
+        return response()->streamDownload(function () use ($fullPath) {
+            $handle = fopen($fullPath, 'rb');
+            if ($handle === false) {
+                return;
+            }
+
+            while (! feof($handle)) {
+                $chunk = fread($handle, 8192);
+                if ($chunk === false) {
+                    break;
+                }
+                echo $chunk;
+                if (function_exists('ob_flush') && ob_get_level() > 0) {
+                    @ob_flush();
+                }
+                flush();
+            }
+
+            fclose($handle);
+        }, $safeName, $headers);
     }
 
     public function deleteBackup($filename)
     {
-        $backupName = config('backup.backup.name', 'Laravel');
-        $path = $backupName . '/' . $filename;
-        
+        $safeName = basename((string) $filename);
+        if ($safeName === '' || ! str_ends_with($safeName, '.zip')) {
+            $this->message = 'Backup file not found.';
+
+            return;
+        }
+
+        $backupName = (string) config('backup.backup.name', 'Laravel');
+        $path = $backupName . '/' . $safeName;
+
         if (Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);
-            $this->message = "Backup file {$filename} has been deleted.";
+            $this->message = "Backup file {$safeName} has been deleted.";
             $this->loadData();
         } else {
-            $this->message = "File tidak ditemukan.";
+            $this->message = 'Backup file not found.';
         }
     }
 
@@ -122,13 +185,18 @@ class BackupManager extends Component
 
         try {
             $options = ['--disable-notifications' => true];
-            if ($type === 'database') $options['--only-db'] = true;
-            if ($type === 'files') $options['--only-files'] = true;
+            if ($type === 'database') {
+                $options['--only-db'] = true;
+            }
+            if ($type === 'files') {
+                $options['--only-files'] = true;
+            }
 
             Artisan::call('backup:run', $options);
             $this->message = "Backup {$type} successfully created!";
             $this->loadData();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('BackupManager runBackup failed: ' . $e->getMessage());
             $this->message = 'Failed to create backup: ' . $e->getMessage();
         }
 
@@ -141,7 +209,8 @@ class BackupManager extends Component
             Artisan::call('backup:clean');
             $this->message = 'Old backup cleanup successful.';
             $this->loadData();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('BackupManager cleanupOld failed: ' . $e->getMessage());
             $this->message = 'Failed to clean up backups: ' . $e->getMessage();
         }
     }
