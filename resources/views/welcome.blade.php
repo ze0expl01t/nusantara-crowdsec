@@ -14,11 +14,36 @@
             from { opacity: 0; transform: translate3d(0, 14px, 0); }
             to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
+        @keyframes cscliColorPulseSweep {
+            0% {
+                background-position: 0% 50%;
+                opacity: 0.72;
+                transform: scaleX(0.96);
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 1;
+                transform: scaleX(1);
+            }
+            100% {
+                background-position: 0% 50%;
+                opacity: 0.72;
+                transform: scaleX(0.96);
+            }
+        }
         .cscli-orb {
             animation: cscliFloatSlow 9s ease-in-out infinite;
         }
         .cscli-fade-up {
             animation: cscliFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .cscli-pulse-line {
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6, #10b981, #f59e0b, #ec4899, #06b6d4);
+            background-size: 260% 100%;
+            animation: cscliColorPulseSweep 5.5s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
         }
         .cscli-reveal {
             opacity: 0;
@@ -31,7 +56,8 @@
         }
         @media (prefers-reduced-motion: reduce) {
             .cscli-orb,
-            .cscli-fade-up {
+            .cscli-fade-up,
+            .cscli-pulse-line {
                 animation: none !important;
             }
             .cscli-reveal {
@@ -48,13 +74,13 @@
     $tamperTime = \Illuminate\Support\Facades\Cache::pull('brand_tamper_detected_at');
 @endphp
 @if ($tamperTime)
-    <div x-data="{ show: true }" x-show="show" x-transition class="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white py-3 px-4 text-center shadow-2xl">
+    <div id="cscli-tamper-banner" class="fixed top-0 left-0 w-full z-[100] bg-red-600 text-white py-3 px-4 text-center shadow-2xl">
         <div class="flex items-center justify-center gap-3 font-semibold text-sm">
             <svg class="size-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span>Security Alert: Branding has been tampered at {{ $tamperTime }}. System has auto-restored.</span>
-            <button @click="show = false" class="ml-4 underline text-white/90 hover:text-white text-xs cursor-pointer">Dismiss</button>
+            <button type="button" onclick="document.getElementById('cscli-tamper-banner')?.remove()" class="ml-4 underline text-white/90 hover:text-white text-xs cursor-pointer">Dismiss</button>
         </div>
     </div>
 @endif
@@ -106,9 +132,12 @@
             <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-6 drop-shadow-lg">
                 {{ \App\Models\Setting::get('hero_title', 'CrowdSec Portal & Documentation') }}
             </h1>
-            <p class="text-lg sm:text-xl text-zinc-400 leading-relaxed mb-8">
+            <p class="text-lg sm:text-xl text-zinc-400 leading-relaxed mb-6">
                 {{ \App\Models\Setting::get('hero_subtitle', 'Real-time threat intelligence, automated mitigation, and security monitoring portal.') }}
             </p>
+            <div class="max-w-md mx-auto mb-8 rounded-full overflow-hidden">
+                <div class="cscli-pulse-line"></div>
+            </div>
             <div class="flex flex-wrap items-center justify-center gap-4">
                 <a href="{{ auth()->check() ? url('/dashboard') : route('login') }}" class="inline-flex items-center justify-center px-6 py-3 text-base font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 transition shadow-lg shadow-blue-900/50">
                     Open Dashboard
@@ -147,8 +176,9 @@
                 <div
                     data-reveal
                     style="transition-delay: {{ min($index * 60, 300) }}ms;"
-                    class="cscli-reveal group block p-6 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl {{ $style['glow'] }} hover:bg-zinc-800/80 transition-all duration-300 hover:-translate-y-1 relative"
+                    class="cscli-reveal group block p-6 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-xl {{ $style['glow'] }} hover:bg-zinc-800/80 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
                 >
+                    <div class="cscli-pulse-line opacity-60 mb-4"></div>
                     <div class="flex items-center gap-3 mb-3">
                         <div class="p-2 {{ $style['icon'] }} rounded-lg group-hover:scale-110 transition-transform">
                             <flux:icon :name="$icon" class="size-5" />
@@ -164,64 +194,60 @@
         <section
             id="quickstart"
             data-reveal
-            x-data="{
-                tab: 'decisions',
-                copied: false,
-                items: {
-                    decisions: {
-                        title: 'Manage Active Decisions',
-                        desc: 'Inspect blocked IPs, filter by scenario or country, and unban false positives.',
-                        cmd: 'cscli decisions list --limit 20'
-                    },
-                    reports: {
-                        title: 'Security Reports & Exports',
-                        desc: 'Filter alert telemetry and export PDF or Excel reports directly from the portal.',
-                        cmd: 'php artisan cscli:check-alerts'
-                    },
-                    backup: {
-                        title: 'System Backup & Recovery',
-                        desc: 'Run database or full backups and download archives safely via streaming download.',
-                        cmd: 'php artisan backup:run --disable-notifications'
-                    }
-                },
-                copyCmd() {
-                    const text = this.items[this.tab].cmd;
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(text).then(() => {
-                            this.copied = true;
-                            setTimeout(() => this.copied = false, 1600);
-                        });
-                    }
-                }
-            }"
-            class="cscli-reveal rounded-2xl border border-zinc-800 bg-zinc-900/75 backdrop-blur-md p-6"
+            class="cscli-reveal rounded-2xl border border-zinc-800 bg-zinc-900/75 backdrop-blur-md overflow-hidden"
         >
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-zinc-800">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">Quick Start</p>
-                    <h2 class="text-xl font-bold text-white mt-0.5">Interactive Workflow Guide</h2>
+            <div class="cscli-pulse-line"></div>
+            <div class="p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-zinc-800">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">Quick Start</p>
+                        <h2 class="text-xl font-bold text-white mt-0.5">Interactive Workflow Guide</h2>
+                    </div>
+                    <div class="inline-flex flex-wrap gap-1.5 p-1 rounded-xl bg-zinc-950 border border-zinc-800" role="tablist">
+                        <button
+                            type="button"
+                            data-wf-btn
+                            data-wf-title="Manage Active Decisions"
+                            data-wf-desc="Inspect blocked IPs, filter by scenario or country, and unban false positives."
+                            data-wf-cmd="cscli decisions list --limit 20"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer bg-blue-600 text-white"
+                        >Decisions</button>
+                        <button
+                            type="button"
+                            data-wf-btn
+                            data-wf-title="Security Reports &amp; Exports"
+                            data-wf-desc="Filter alert telemetry and export PDF or Excel reports directly from the portal."
+                            data-wf-cmd="php artisan cscli:check-alerts"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer text-zinc-400 hover:text-zinc-200"
+                        >Reports</button>
+                        <button
+                            type="button"
+                            data-wf-btn
+                            data-wf-title="System Backup &amp; Recovery"
+                            data-wf-desc="Run database or full backups and download archives safely via streaming download."
+                            data-wf-cmd="php artisan backup:run --disable-notifications"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer text-zinc-400 hover:text-zinc-200"
+                        >Backup</button>
+                    </div>
                 </div>
-                <div class="inline-flex flex-wrap gap-1.5 p-1 rounded-xl bg-zinc-950 border border-zinc-800">
-                    <button type="button" @click="tab = 'decisions'" :class="tab === 'decisions' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">Decisions</button>
-                    <button type="button" @click="tab = 'reports'" :class="tab === 'reports' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">Reports</button>
-                    <button type="button" @click="tab = 'backup'" :class="tab === 'backup' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-zinc-200'" class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">Backup</button>
-                </div>
-            </div>
 
-            <div class="pt-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-                <div class="lg:col-span-7 space-y-1.5">
-                    <h3 x-text="items[tab].title" class="text-base font-bold text-white"></h3>
-                    <p x-text="items[tab].desc" class="text-sm text-zinc-400"></p>
-                </div>
-                <div class="lg:col-span-5">
-                    <div class="rounded-xl bg-zinc-950 border border-zinc-800 p-3.5 space-y-2">
-                        <div class="flex items-center justify-between text-xs text-zinc-500">
-                            <span class="font-mono">Command</span>
-                            <button type="button" @click="copyCmd()" class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition cursor-pointer">
-                                <span x-text="copied ? 'Copied' : 'Copy'"></span>
-                            </button>
+                <div class="pt-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                    <div class="lg:col-span-7 space-y-1.5">
+                        <h3 id="wf-title" class="text-base font-bold text-white">Manage Active Decisions</h3>
+                        <p id="wf-desc" class="text-sm text-zinc-400">Inspect blocked IPs, filter by scenario or country, and unban false positives.</p>
+                    </div>
+                    <div class="lg:col-span-5">
+                        <div class="rounded-xl bg-zinc-950 border border-zinc-800 p-3.5 space-y-2">
+                            <div class="flex items-center justify-between text-xs text-zinc-500">
+                                <span class="font-mono">Command</span>
+                                <button
+                                    id="wf-copy-btn"
+                                    type="button"
+                                    class="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition cursor-pointer"
+                                >Copy</button>
+                            </div>
+                            <pre class="overflow-x-auto text-xs font-mono text-cyan-300"><code id="wf-cmd">cscli decisions list --limit 20</code></pre>
                         </div>
-                        <pre class="overflow-x-auto text-xs font-mono text-cyan-300"><code x-text="items[tab].cmd"></code></pre>
                     </div>
                 </div>
             </div>
@@ -239,21 +265,57 @@
     <script>
         (() => {
             const els = document.querySelectorAll('[data-reveal]');
-            if (!els.length) return;
-            const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduced || !('IntersectionObserver' in window)) {
-                els.forEach((el) => el.classList.add('is-visible'));
-                return;
+            if (els.length) {
+                const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (reduced || !('IntersectionObserver' in window)) {
+                    els.forEach((el) => el.classList.add('is-visible'));
+                } else {
+                    const io = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                io.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.12 });
+                    els.forEach((el) => io.observe(el));
+                }
             }
-            const io = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                        io.unobserve(entry.target);
+
+            const buttons = Array.from(document.querySelectorAll('[data-wf-btn]'));
+            const titleEl = document.getElementById('wf-title');
+            const descEl = document.getElementById('wf-desc');
+            const cmdEl = document.getElementById('wf-cmd');
+            const copyBtn = document.getElementById('wf-copy-btn');
+
+            function setActive(btn) {
+                buttons.forEach((b) => {
+                    b.classList.remove('bg-blue-600', 'text-white');
+                    b.classList.add('text-zinc-400', 'hover:text-zinc-200');
+                });
+                btn.classList.remove('text-zinc-400', 'hover:text-zinc-200');
+                btn.classList.add('bg-blue-600', 'text-white');
+
+                if (titleEl && btn.dataset.wfTitle) titleEl.textContent = btn.dataset.wfTitle;
+                if (descEl && btn.dataset.wfDesc) descEl.textContent = btn.dataset.wfDesc;
+                if (cmdEl && btn.dataset.wfCmd) cmdEl.textContent = btn.dataset.wfCmd;
+            }
+
+            buttons.forEach((btn) => {
+                btn.addEventListener('click', () => setActive(btn));
+            });
+
+            if (copyBtn && cmdEl) {
+                copyBtn.addEventListener('click', () => {
+                    const text = cmdEl.textContent || '';
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            copyBtn.textContent = 'Copied';
+                            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1600);
+                        }).catch(() => {});
                     }
                 });
-            }, { threshold: 0.12 });
-            els.forEach((el) => io.observe(el));
+            }
         })();
     </script>
 </body>
