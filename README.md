@@ -29,6 +29,7 @@
 - [Scheduler & Background Tasks](#scheduler--background-tasks)
 - [Troubleshooting](#troubleshooting)
 - [Tech Stack](#tech-stack)
+- [Changelog](#changelog)
 - [License](#license)
 
 ---
@@ -64,10 +65,10 @@ The application communicates **directly with CrowdSec Local API (LAPI) over HTTP
 | **Decision Manager** | Full lifecycle management of CrowdSec decisions | Search/filter active decisions, create manual bans with duration and reason, and remove/unban IPs |
 | **Allowlist Manager** | Trusted address management | Add and manage allowlisted IPs/CIDR ranges with validation so trusted sources are not blocked |
 | **Live Attack Map** | Geographic visualization of incoming threats | Interactive map and attack path lines rendered via Apache ECharts with GeoIP caching |
-| **Reports** | Operational alert and mitigation reporting | Filter and export security alert/report data including charts to PDF or Excel |
+| **Reports** | Operational alert and mitigation reporting | Interactive filtering (`search`, `scenario`, `country`, `decision`), normalized scenario labels, and PDF/Excel export with charts |
 | **Notification Settings** | Automated alert delivery for selected scenarios | Filter by scenario name and deliver alerts via dynamically configured SMTP email and Telegram bot (`timeout(5)`) |
-| **Site Settings** | Dynamic landing page and portal configuration | Customize application name, branding, hero copy, and feature cards stored in database settings |
-| **Backup Manager** | Database backup and schema/seeder utilities | Generate database backups and support migration/seeder workflows |
+| **Site Settings** | Dynamic landing page and portal configuration | Customize application name, branding, hero copy, hero icon (`heroicon`), and feature cards stored in database settings |
+| **Backup Manager** | Database/archive backup and download utilities | Create full, database, or file backups, run cleanups, and download `.zip` archives via a dedicated `BinaryFileResponse` route |
 | **Audit Logs** | Traceability for administrative actions | Records actor identity, IP address, action type, target resource, and metadata |
 
 ---
@@ -201,7 +202,7 @@ DB_DATABASE=nusantara_crowdsec
 DB_USERNAME=nusantara_user
 DB_PASSWORD="YourStrongPassword"
 
-CROWDSEC_LAPI_URL="[http://127.0.0.1:8080](http://127.0.0.1:8080)"
+CROWDSEC_LAPI_URL=[http://127.0.0.1:8080](http://127.0.0.1:8080)
 CROWDSEC_BOUNCER_KEY="Your_Bouncer_Key"
 CROWDSEC_MACHINE_NAME="nusantara-writer"
 CROWDSEC_MACHINE_PASSWORD="Your_Machine_Password"
@@ -293,6 +294,18 @@ php artisan view:clear
 - **Data Visualization:** Chart.js, Apache ECharts
 - **Database:** MySQL 8.0+ / MariaDB
 - **Threat Engine:** CrowdSec LAPI
+
+---
+
+## Changelog
+
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg> **Recent Updates (`v1.0.0` Latest)**
+
+- **Localization (English UI & Pagination):** Translated navigation labels (`Decisions`), dashboard charts (`Attacks`, `Blocked IPs`), Attack Map error notice, Backup Manager messages, Site Settings defaults, PDF report headers (`CrowdSec Security Report`, `Attacker IP`, `Scenario`), and Livewire Tailwind pagination summary (`Showing ... to ... of ... results`) to English.
+- **Reports & Chart Normalization:** Added interactive filtering (`search`, `scenario`, `country`, `decision`, and reset) applied consistently to tables, charts, PDF exports, and Excel exports, normalized empty/malformed scenario labels to `Unknown`, and added a 5-second timeout with warning logs for QuickChart rendering.
+- **Portable Backup Download (`BinaryFileResponse`):** Refactored backup archive downloads to a dedicated authenticated `GET settings/backup/download/{filename}` route via `BackupDownloadController` using `response()->download(...)` with `basename()` and `.zip` validation to avoid Livewire memory exhaustion on large archives.
+- **Interactive Landing Page, Hero Icon & Colorful Pulse Line:** Added scroll-reveal and ambient motion animations (`prefers-reduced-motion` aware), configurable `heroicon` support on the landing page, interactive workflow guide tabs (`Decisions`, `Reports`, `Backup`) with one-click CLI command copy, and colorful animated pulse lines below the header navigation and top of the workflow guide (excluding feature cards and hero subtitle).
+- **Reliability & Test Coverage:** Added GeoIP negative caching (`__geoip_failed__` for 20 minutes), LAPI error/warning logging (`deleteDecision`, `isConnected`, `getAlerts`), 5-second Telegram alert timeout, `CheckCrowdSecAlerts` lock & `withoutOverlapping(5)`, cached/guarded boot settings & portable migrations, 15-minute `refresh_dashboard` audit throttling, `PortalModulesTest`, and full passing test suite (`26 passed, 60 assertions`).
 
 ---
 
