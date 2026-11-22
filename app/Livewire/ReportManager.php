@@ -62,6 +62,7 @@ class ReportManager extends Component
     public function exportPdf(CrowdSecLapiClient $client)
     {
         $alerts = $this->filterAlerts($this->getAlertsData($client));
+        $normalizedAlerts = $this->normalizeAlertsForReport($alerts);
         $topScenarios = $this->buildTopScenarios($alerts);
 
         $barConfig = [
@@ -79,10 +80,23 @@ class ReportManager extends Component
         $barChartUrl = 'https://quickchart.io/chart?w=400&h=200&bkg=white&c=' . urlencode(json_encode($barConfig));
 
         $countries = [];
-        foreach ($alerts as $a) {
-            $cn = trim((string) ($a['source']['cn'] ?? ''));
-            $cn = $cn !== '' ? $cn : 'Unknown';
+        $activeDecisions = 0;
+        $noDecision = 0;
+        $uniqueIps = [];
+
+        foreach ($normalizedAlerts as $row) {
+            $cn = $row['country'];
             $countries[$cn] = ($countries[$cn] ?? 0) + 1;
+
+            if ($row['has_decision']) {
+                $activeDecisions++;
+            } else {
+                $noDecision++;
+            }
+
+            if ($row['ip'] !== 'N/A' && $row['ip'] !== '') {
+                $uniqueIps[$row['ip']] = true;
+            }
         }
         arsort($countries);
         $topCountries = array_slice($countries, 0, 5, true);
@@ -102,10 +116,40 @@ class ReportManager extends Component
         $barBase64 = $this->fetchChartAsBase64($barChartUrl, 'bar');
         $donutBase64 = $this->fetchChartAsBase64($donutChartUrl, 'donut');
 
+        $summary = [
+            'total_alerts' => count($normalizedAlerts),
+            'active_decisions' => $activeDecisions,
+            'no_decision' => $noDecision,
+            'unique_ips' => count($uniqueIps),
+            'top_scenario' => $topScenarios['labels'][0] ?? 'N/A',
+        ];
+
+        $filtersSummary = [
+            'search' => trim($this->search) !== '' ? trim($this->search) : 'All',
+            'scenario' => $this->selectedScenario !== '' ? $this->selectedScenario : 'All Scenarios',
+            'country' => $this->selectedCountry !== '' ? $this->selectedCountry : 'All Countries',
+            'decision' => match ($this->decisionFilter) {
+                'banned' => 'Banned / Active Decision',
+                'none' => 'No Decision (none)',
+                default => 'All Decisions',
+            },
+        ];
+
         $pdf = Pdf::loadView('pdf.alerts-pdf', [
             'alerts' => $alerts,
+            'normalizedAlerts' => $normalizedAlerts,
+            'summary' => $summary,
+            'filtersSummary' => $filtersSummary,
             'barBase64' => $barBase64,
             'donutBase64' => $donutBase64,
+        ]);
+
+        Log::info('ReportManager PDF exported', [
+            'filtered_count' => count($normalizedAlerts),
+            'charts_loaded' => [
+                'donut' => $donutBase64 !== '',
+                'bar' => $barBase64 !== '',
+            ],
         ]);
 
         return response()->streamDownload(function () use ($pdf) {
@@ -118,6 +162,13 @@ class ReportManager extends Component
         $alerts = $this->filterAlerts($this->getAlertsData($client));
 
         return Excel::download(new AlertsExport($alerts), 'crowdsec-alerts-' . date('Ymd') . '.xlsx');
+    }
+
+    private function normalizeCountryName(mixed $raw): string
+    {
+        $value = trim((string) ($raw ?? ''));
+
+        return $value !== '' ? $value : 'Unknown';
     }
 
     private function normalizeScenarioName(mixed $raw): string
@@ -135,10 +186,51 @@ class ReportManager extends Component
         return $clean;
     }
 
+    private function normalizeAlertsForReport(array $alerts): array
+    {
+        $rows = [];
+        foreach ($alerts as $alert) {
+            if (! is_array($alert)) {
+                continue;
+            }
+
+            $timeDisplay = '-';
+            if (! empty($alert['created_at'])) {
+                try {
+                    $timeDisplay = \Carbon\Carbon::parse((string) $alert['created_at'])->format('d/m/Y H:i');
+                } catch (\Throwable $e) {
+                    $timeDisplay = (string) $alert['created_at'];
+                }
+            }
+
+            $ip = trim((string) ($alert['source']['value'] ?? ''));
+            $ipDisplay = $ip !== '' ? $ip : 'N/A';
+            $countryDisplay = $this->normalizeCountryName($alert['source']['cn'] ?? null);
+            $scenarioDisplay = $this->normalizeScenarioName($alert['scenario'] ?? null);
+            $decisionRaw = trim((string) ($alert['decisions'][0]['type'] ?? ''));
+            $hasDecision = $decisionRaw !== '';
+            $decisionDisplay = $hasDecision ? $decisionRaw : 'none';
+
+            $rows[] = [
+                'time' => $timeDisplay,
+                'ip' => $ipDisplay,
+                'country' => $countryDisplay,
+                'scenario' => $scenarioDisplay,
+                'decision' => $decisionDisplay,
+                'has_decision' => $hasDecision,
+            ];
+        }
+
+        return $rows;
+    }
+
     private function buildTopScenarios(array $alerts): array
     {
         $scenarios = [];
         foreach ($alerts as $a) {
+            if (! is_array($a)) {
+                continue;
+            }
             $sc = $this->normalizeScenarioName($a['scenario'] ?? null);
             $scenarios[$sc] = ($scenarios[$sc] ?? 0) + 1;
         }
@@ -155,10 +247,13 @@ class ReportManager extends Component
     {
         $search = strtolower(trim($this->search));
 
-        return array_values(array_filter($alerts, function (array $alert) use ($search): bool {
+        return array_values(array_filter($alerts, function (mixed $alert) use ($search): bool {
+            if (! is_array($alert)) {
+                return false;
+            }
+
             $ip = strtolower((string) ($alert['source']['value'] ?? ''));
-            $cn = trim((string) ($alert['source']['cn'] ?? ''));
-            $cnLabel = $cn !== '' ? $cn : 'Unknown';
+            $cnLabel = $this->normalizeCountryName($alert['source']['cn'] ?? null);
             $rawScenario = (string) ($alert['scenario'] ?? '');
             $normScenario = $this->normalizeScenarioName($rawScenario);
             $hasDecision = ! empty($alert['decisions'][0]['type']);
@@ -210,7 +305,7 @@ class ReportManager extends Component
         try {
             $rawData = $client->getAlerts(100);
 
-            return array_values(array_filter($rawData, 'is_array'));
+            return is_array($rawData) ? array_values(array_filter($rawData, 'is_array')) : [];
         } catch (\Throwable $e) {
             Log::warning('ReportManager getAlertsData failed: ' . $e->getMessage());
 
@@ -226,8 +321,7 @@ class ReportManager extends Component
         $countryOptions = [];
         foreach ($allAlerts as $alert) {
             $sc = $this->normalizeScenarioName($alert['scenario'] ?? null);
-            $cn = trim((string) ($alert['source']['cn'] ?? ''));
-            $cn = $cn !== '' ? $cn : 'Unknown';
+            $cn = $this->normalizeCountryName($alert['source']['cn'] ?? null);
             $scenarioOptions[$sc] = $sc;
             $countryOptions[$cn] = $cn;
         }

@@ -92,19 +92,23 @@
                     <flux:table.rows>
                         @forelse ($paginatedAlerts as $alert)
                             @php
-                                $countryCode = trim((string) ($alert['source']['cn'] ?? ''));
+                                $alertArr = is_array($alert) ? $alert : [];
+                                $countryCode = trim((string) ($alertArr['source']['cn'] ?? ''));
                                 $countryDisplay = $countryCode !== '' ? $countryCode : 'Unknown';
-                                $scenarioRaw = (string) ($alert['scenario'] ?? '');
-                                $scenarioDisplay = $scenarioRaw !== '' ? $scenarioRaw : 'Unknown';
+                                $scenarioRaw = trim((string) ($alertArr['scenario'] ?? ''));
+                                $scenarioDisplay = ($scenarioRaw !== '' && $scenarioRaw !== '0' && !str_starts_with($scenarioRaw, '-'))
+                                    ? basename($scenarioRaw)
+                                    : 'Unknown';
+                                $decisionType = trim((string) ($alertArr['decisions'][0]['type'] ?? ''));
                             @endphp
-                            <flux:table.row :key="$alert['id'] ?? md5(json_encode($alert))">
-                                <flux:table.cell class="whitespace-nowrap">{{ !empty($alert['created_at']) ? \Carbon\Carbon::parse($alert['created_at'])->format('d/m/Y H:i') : '-' }}</flux:table.cell>
-                                <flux:table.cell class="font-mono">{{ $alert['source']['value'] ?? 'N/A' }}</flux:table.cell>
+                            <flux:table.row :key="$alertArr['id'] ?? md5(json_encode($alertArr))">
+                                <flux:table.cell class="whitespace-nowrap">{{ !empty($alertArr['created_at']) ? \Carbon\Carbon::parse((string) $alertArr['created_at'])->format('d/m/Y H:i') : '-' }}</flux:table.cell>
+                                <flux:table.cell class="font-mono">{{ $alertArr['source']['value'] ?? 'N/A' }}</flux:table.cell>
                                 <flux:table.cell>{{ $countryDisplay }}</flux:table.cell>
                                 <flux:table.cell><flux:badge color="zinc" size="sm">{{ $scenarioDisplay }}</flux:badge></flux:table.cell>
                                 <flux:table.cell>
-                                    @if(!empty($alert['decisions'][0]['type']))
-                                        <flux:badge color="red">{{ $alert['decisions'][0]['type'] }}</flux:badge>
+                                    @if($decisionType !== '')
+                                        <flux:badge color="red">{{ $decisionType }}</flux:badge>
                                     @else
                                         <flux:badge color="green">none</flux:badge>
                                     @endif
