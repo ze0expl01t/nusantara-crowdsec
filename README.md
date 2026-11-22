@@ -341,3 +341,8 @@ This project is open-sourced under the [MIT License](LICENSE).
   <b>Maintained by arkanintermedia</b><br>
   <i>Built in Indonesia</i>
 </div>
+<div align="center">
+  <a href="https://saweria.co/arkanintermedia">
+      <img width="1024" height="254" alt="image" src="https://github.com/user-attachments/assets/1e83252f-20e1-4282-b466-f6ee5cb09148" />
+  </a>
+</div>
