@@ -47,16 +47,6 @@
     }
 }
 
-
-
-
-
-
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
-
 /* Memaksa kursor tangan untuk semua tombol yang bisa diklik di pagination */
 nav[role="navigation"] button:not([disabled]),
 .pagination-wrapper button:not([disabled]) {
@@ -64,11 +54,44 @@ nav[role="navigation"] button:not([disabled]),
 }
 
 /* ==========================================
+   ANIMASI GARIS GRADASI BIRU-CYAN DI ATAS CARD
+   ========================================== */
+.cscli-top-beam {
+    background: linear-gradient(
+        90deg,
+        #2563eb 0%,
+        #38bdf8 25%,
+        #67e8f9 50%,
+        #38bdf8 75%,
+        #2563eb 100%
+    );
+    background-size: 220% 100%;
+    animation: cscliTopBeamSlide 4s linear infinite;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+}
+
+@keyframes cscliTopBeamSlide {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 220% 50%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cscli-top-beam {
+        animation: none;
+        background-position: 0% 50%;
+    }
+}
+
+/* ==========================================
    MEMAKSA INPUT TETAP GELAP SAAT AUTOFILL
    ========================================== */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 50px #18181b inset !important; /* Warna zinc-900 */
     -webkit-text-fill-color: #fafafa !important; /* Warna teks putih */
